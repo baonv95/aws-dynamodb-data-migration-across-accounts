@@ -5,7 +5,7 @@ const {
   BatchWriteCommand,
 } = require('@aws-sdk/lib-dynamodb')
 
-const QUERY_LIMIT = 1;
+const QUERY_LIMIT = 25;
 
 class DynamodbDatasource {
   constructor({profile}){
