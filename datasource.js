@@ -57,10 +57,7 @@ class DynamodbDatasource {
     }
   }
 
-  async batchWriteItem({
-    items,
-    tableName
-  }) {
+  async batchWriteItem(tableName, items) {
     const batchWriteCmd = new BatchWriteCommand({
       RequestItems: {
         [tableName]: items.map(obj => ({

@@ -1,12 +1,14 @@
 const { DynamodbDatasource } = require('./datasource');
 
+const DYNAMODB_TABLE_NAME = 'Table-Master';
+
 const dsSource = new DynamodbDatasource({
-  profile: 'profile1'
-})
+  profile: 'source-dev'
+});
 
 const dsDestination = new DynamodbDatasource({
-  profile: 'profile2'
-})
+  profile: 'dest-dev'
+});
 
 const callbackTest = (arg)=>{
   console.log({arg}, 'callbacks');
@@ -16,14 +18,15 @@ const main = async ()=>{
   const callbacksChain = [];
 
   await dsSource.paginatedQueryWithCallback({
-    tableName: 'Machine-Cleaning-Master',
+    tableName: DYNAMODB_TABLE_NAME,
     keyConditionExpression: 'PK = :PK AND begins_with ( SK, :SK )',
     expressionAttributeValues: {
       ':PK': 'PK',
-      ':SK': 'SK'
+      ':SK': 'SK_PREFIX'
     },
-  }, callbackTest, 
-    callbacksChain
+  }, 
+  dsDestination.batchWriteItem.bind(dsDestination, DYNAMODB_TABLE_NAME), 
+  callbacksChain
   )
 
   await Promise.all(callbacksChain);
