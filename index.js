@@ -1,28 +1,32 @@
 const { DynamodbDatasource } = require('./datasource');
 
 const dsSource = new DynamodbDatasource({
-  profile: 'am-dev'
+  profile: 'profile1'
 })
 
 const dsDestination = new DynamodbDatasource({
-  profile: 'pcmp-dev'
+  profile: 'profile2'
 })
 
-const callback = (arg)=>{
+const callbackTest = (arg)=>{
   console.log({arg}, 'callbacks');
 }
 
-
 const main = async ()=>{
-  const callbackChain = [];
+  const callbacksChain = [];
 
   await dsSource.paginatedQueryWithCallback({
     tableName: 'Machine-Cleaning-Master',
-    keyConditionExpression: 'PK = :PK',
+    keyConditionExpression: 'PK = :PK AND begins_with ( SK, :SK )',
     expressionAttributeValues: {
-      ':PK': 'CUSTOMER#52bac383-006a-46c7-80c9-36e572f57277',
+      ':PK': 'PK',
+      ':SK': 'SK'
     },
-  }, callback, callbackChain)
+  }, callbackTest, 
+    callbacksChain
+  )
+
+  await Promise.all(callbacksChain);
 }
 
 main()
