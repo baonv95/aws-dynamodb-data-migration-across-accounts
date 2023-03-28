@@ -19,7 +19,9 @@ class DynamodbDatasource {
 
   async paginatedScanWithCallbackExecution({
       tableName, 
-      exclusiveStartKey
+      exclusiveStartKey,
+      filterExpression,
+      expressionAttributeValues,
     }, 
     callback,
     executionChain = [],
@@ -29,7 +31,9 @@ class DynamodbDatasource {
     const queryCommand = new ScanCommand({
       TableName: tableName,
       Limit: BATCH_LIMIT,
-      ExclusiveStartKey: exclusiveStartKey
+      ExclusiveStartKey: exclusiveStartKey,
+      FilterExpression: filterExpression,
+      ExpressionAttributeValues: expressionAttributeValues
     });
     const {
       Items: items, 
@@ -49,7 +53,9 @@ class DynamodbDatasource {
 
       await this.paginatedScanWithCallbackExecution({
           tableName,
-          exclusiveStartKey: lastEvaluatedKey
+          exclusiveStartKey: lastEvaluatedKey,
+          filterExpression,
+          expressionAttributeValues
         }, 
         callback, 
         executionChain,
@@ -112,11 +118,18 @@ class DynamodbDatasource {
   }
 
   async batchWriteItem(tableName, items) {
+    if(!items.length){
+      return;
+    }
+
     const batchWriteCmd = new BatchWriteCommand({
       RequestItems: {
         [tableName]: items.map(obj => ({
           PutRequest: {
-            Item: obj,
+            Item: {
+              ...obj,
+              // classification: 'GCD'
+            },
           },
         })),
       },
